@@ -4,7 +4,12 @@ var gutil = require('gulp-util');
 var path = require('path');
 var urlparse = require('url').parse;
 
-module.exports = function override() {
+module.exports = function override(opts) {
+
+    opts = Object.assign({
+        failOnMissingFile: false
+    }, opts);
+
     var allowedPathRegExp = /\.css$/;
     var cssUrlRegExp = /url\(['"]?([^'"\)]*)['"]?\)/gi;
 
@@ -49,7 +54,11 @@ module.exports = function override() {
                   var _path = path.join(dir, parsed.pathname);
                   var _new = lookup[_path];
                   if(!_new) {
-                    return m;  // Leave unmodified.
+                    if (opts.failOnMissingFile) {
+                      throw `Missing manifest entry for ${_path} in ${file.path}`
+                    } else {
+                      return m;  // Leave unmodified.
+                    }
                   }
                   _new = path.relative(dir, _new) +
                     (parsed.search || '') +
